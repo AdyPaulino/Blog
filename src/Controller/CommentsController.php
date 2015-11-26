@@ -18,9 +18,13 @@ class CommentsController extends AppController
      */
     public function index()
     {
-        //$this->set('comments', $this->Comments->find()->where(['approved' => 1]));
-        $comments = $this->Comments->find('all');
-        $this->set(compact('comments'));
+        $user = $this->Auth->user();
+        if (parent::isAuthorized($user)) {
+            $comments = $this->Comments->find('all')->contain(['Articles']);      
+        } else {
+           $comments = $this->Comments->find('all')->contain(['Articles'])->where(['approved' => 1]);
+        }
+         $this->set(compact('comments'));
     }
 
     /**
@@ -33,7 +37,7 @@ class CommentsController extends AppController
     public function view($id = null)
     {
         $comment = $this->Comments->get($id, [
-            'contain' => ['Authors']
+            'contain' => ['Articles']
         ]);
         $this->set('comment', $comment);
         $this->set('_serialize', ['comment']);
@@ -46,14 +50,20 @@ class CommentsController extends AppController
      */
     public function add($id = null)
     {
+        echo "HERE";
         $comment = $this->Comments->newEntity();
         if ($this->request->is('post')) {
             $comment = $this->Comments->patchEntity($comment, $this->request->data);
-            // Added this line
-            $comment->article_id = $id;
-            if ($this->Comments->save($comment)) {
-                $this->Flash->success(__('Your comment has been saved.'));
-                return $this->redirect(['action' => 'index', 'controller'=>'articles']);
+            
+            if ($id != null){
+                $comment->article_id = $id;
+                if ($this->Comments->save($comment)) {
+                    $this->Flash->success(__('Your comment has been saved.'));
+                    return $this->redirect(['action' => 'index', 'controller'=>'articles']);
+                }
+            } else {
+                $this->Flash->error(__('Unable to add your comment. You should try to add a comment via Article'));
+                 return $this->redirect(['action' => 'index', 'controller'=>'articles']);
             }
             $this->Flash->error(__('Unable to add your comment.'));
         }
@@ -70,14 +80,17 @@ class CommentsController extends AppController
     public function edit($id = null)
     {
         $comment = $this->Comments->get($id);
-        if ($this->request->is(['post', 'put'])) {
-            $this->Comments->patchEntity($comment, $this->request->data);
-            $comment->user_id = $this->Auth->user('id');
-            if ($this->Comments->save($comment)) {
-                $this->Flash->success(__('Your comment has been updated.'));
-                return $this->redirect(['action' => 'index']);
+        $user = $this->Auth->user();
+        if (parent::isAuthorized($user)) {
+            if ($this->request->is(['post', 'put'])) {
+                $this->Comments->patchEntity($comment, $this->request->data);
+
+                if ($this->Comments->save($comment)) {
+                    $this->Flash->success(__('Your comment has been updated.'));
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Unable to update your comment.'));
             }
-            $this->Flash->error(__('Unable to update your comment.'));
         }
 
         $this->set('comment', $comment);
@@ -104,18 +117,6 @@ class CommentsController extends AppController
     
     public function isAuthorized($user)
     {
-        // All registered users can add comments
-        if ($this->request->action === 'add') {
-            return true;
-        }
-
-        // The owner of an comment can edit and delete it
-        if (in_array($this->request->action, ['edit', 'delete'])) {
-            $commentId = (int)$this->request->params['pass'][0];
-            if ($this->Comments->isOwnedBy($commentId, $user['id'])) {
-                return true;
-            }
-        }
 
         return parent::isAuthorized($user);
     }

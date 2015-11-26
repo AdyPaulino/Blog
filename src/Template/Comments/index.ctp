@@ -1,37 +1,38 @@
-<!-- File: src/Template/Articles/index.ctp -->
+<!-- File: src/Template/Comments/index.ctp -->
 
-<h1>Blog articles</h1>
-<p><?= $this->Html->link('Add Article', ['action' => 'add']) ?></p> <p><?= $this->Html->link('Logout', ['controller'=> 'users','action' => 'logout']) ?></p>
+<h1>Blog comments</h1>
+<p><?= $this->Html->link('Logout', ['controller'=> 'users','action' => 'logout']) ?></p>
 <table>
     <tr>
         <th>Id</th>
+        <th>Article</th>
         <th>Title</th>
-        <th>Created</th>
-        <th>Author</th>
+        <th>Approved</th>
         <th>Actions</th>
     </tr>
 
-<!-- Here's where we loop through our $articles query object, printing out article info -->
+<!-- Here's where we loop through our $comments query object, printing out comment info -->
 
-    <?php foreach ($articles as $article): ?>
+    <?php foreach ($comments as $comment): ?>
     <tr>
-        <td><?= $article->id ?></td>
-        <td>
-            <?= $this->Html->link($article->title, ['action' => 'view', $article->id]) ?>
+        <td><?= $comment->id ?></td>
+         <td>
+            <?= $comment->article->title ?>
         </td>
         <td>
-            <?= $article->created->format(DATE_RFC850) ?>
+            <?= $this->Html->link($comment->title, ['action' => 'view', $comment->id]) ?>
         </td>
         <td>
-            <?= $article->author->username ?>
+            <?= $comment->approved ?>
         </td>
+       
         <td>
             <?= $this->Form->postLink(
                 'Delete',
-                ['action' => 'delete', $article->id],
+                ['action' => 'delete', $comment->id],
                 ['confirm' => 'Are you sure?'])
             ?>
-            <?= $this->Html->link('Edit', ['action' => 'edit', $article->id]) ?>
+            <?= $this->Html->link('Edit', ['action' => 'edit', $comment->id]) ?>
         </td>
     </tr>
     <?php endforeach; ?>

@@ -7,7 +7,7 @@
 <p>Author: <?= $article->author->username ?></p>
 <p><small>Created: <?= $article->created->format(DATE_RFC850) ?></small></p>
 
-<h1>Comments</h1>
+<h2>Comments</h2>
 
 <table>
     <tr>

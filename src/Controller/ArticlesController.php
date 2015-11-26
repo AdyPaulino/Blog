@@ -31,9 +31,24 @@ class ArticlesController extends AppController
      */
     public function view($id = null)
     {
-        $article = $this->Articles->get($id, [
-            'contain' => ['Authors', 'Comments']
-        ]);
+        
+        //only admin can see all the comments
+        $user = $this->Auth->user();
+        if (parent::isAuthorized($user)) {
+        
+            $article = $this->Articles->get($id, [
+                'contain' => ['Authors', 'Comments']
+            ]);
+        } else {
+            $article = $this->Articles->get($id, [
+            'contain' => ['Authors', 'Comments' => function ($q) {
+               return $q
+                    ->select(['body', 'article_id', 'title', 'id'])
+                    ->where(['Comments.approved' => true]);
+                }]
+            ]);
+        }
+        
         $this->set('article', $article);
         $this->set('_serialize', ['article']);
     }

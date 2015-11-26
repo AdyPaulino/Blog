@@ -18,6 +18,7 @@ class CommentsController extends AppController
      */
     public function index()
     {
+        //$this->set('comments', $this->Comments->find()->where(['approved' => 1]));
         $comments = $this->Comments->find('all');
         $this->set(compact('comments'));
     }

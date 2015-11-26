@@ -4,8 +4,10 @@
 
 <h1><?= h($article->title) ?></h1>
 <p><?= h($article->body) ?></p>
-<p><?= $article->author->username ?></p>
+<p>Author: <?= $article->author->username ?></p>
 <p><small>Created: <?= $article->created->format(DATE_RFC850) ?></small></p>
+
+<h1>Comments</h1>
 
 <table>
     <tr>

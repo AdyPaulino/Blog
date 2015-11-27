@@ -29,3 +29,20 @@
 <?php endforeach; ?>
 
 </table>
+
+<h2>Tags</h2>
+
+<table>
+    <tr>
+        <th>Description</th>
+    </tr>
+
+<?php foreach ($article->tags as $tag): ?>
+    <tr>
+        <td>
+            <?= $tag->description ?>
+        </td>
+    </tr>
+<?php endforeach; ?>
+
+</table>

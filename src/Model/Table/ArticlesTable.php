@@ -43,7 +43,7 @@ class ArticlesTable extends Table
         ]);
         
         //many to many relationship
-        
+        $this->belongsToMany('Tags');
 
     }
 

@@ -18,7 +18,7 @@ class ArticlesController extends AppController
      */
     public function index()
     {
-        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments']);
+        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments', 'Tags']);
         $this->set(compact('articles'));
     }
 
@@ -37,11 +37,11 @@ class ArticlesController extends AppController
         if (parent::isAuthorized($user)) {
         
             $article = $this->Articles->get($id, [
-                'contain' => ['Authors', 'Comments']
+                'contain' => ['Authors', 'Comments', 'Tags']
             ]);
         } else {
             $article = $this->Articles->get($id, [
-            'contain' => ['Authors', 'Comments' => function ($q) {
+            'contain' => ['Authors', 'Tags', 'Comments' => function ($q) {
                return $q
                     ->select(['body', 'article_id', 'title', 'id'])
                     ->where(['Comments.approved' => true]);

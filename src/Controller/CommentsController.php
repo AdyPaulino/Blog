@@ -50,7 +50,6 @@ class CommentsController extends AppController
      */
     public function add($id = null)
     {
-        echo "HERE";
         $comment = $this->Comments->newEntity();
         if ($this->request->is('post')) {
             $comment = $this->Comments->patchEntity($comment, $this->request->data);
@@ -118,6 +117,11 @@ class CommentsController extends AppController
     public function isAuthorized($user)
     {
 
+         // All registered users can add comments
+        if ($this->request->action === 'add') {
+            return true;
+        }
+        
         return parent::isAuthorized($user);
     }
 }

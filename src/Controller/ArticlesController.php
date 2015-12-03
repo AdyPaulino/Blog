@@ -65,12 +65,31 @@ class ArticlesController extends AppController
             $article = $this->Articles->patchEntity($article, $this->request->data);
             // Added this line
             $article->user_id = $this->Auth->user('id');
+            
             if ($this->Articles->save($article)) {
+                
+                foreach ($this->request->data['tags'] as $value) { 
+                    $tag2 = $this->Articles->Tags->findById($value)->first();
+                    $this->Articles->Tags->link($article, [$tag2]);
+                }
                 $this->Flash->success(__('Your article has been saved.'));
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('Unable to add your article.'));
+            $this->Flash->error(__('Unable to add your article.')); 
         }
+        
+        //Tags
+        $this->loadModel('Tags');
+        $tags = $this->Tags->find('all');
+        
+        $tagArray = array();
+        
+        foreach ($tags as $key => $value) { 
+            $tagArray[$value['id']] = $value['description'];
+        }
+        
+        $this->set('tags', $tagArray); 
+        
         $this->set('article', $article);
     }
 
@@ -83,7 +102,9 @@ class ArticlesController extends AppController
      */
     public function edit($id = null)
     {
-        $article = $this->Articles->get($id);
+        $article = $this->Articles->get($id, [
+                'contain' => ['Authors', 'Comments', 'Tags']
+        ]);
         if ($this->request->is(['post', 'put'])) {
             $this->Articles->patchEntity($article, $this->request->data);
             $article->user_id = $this->Auth->user('id');

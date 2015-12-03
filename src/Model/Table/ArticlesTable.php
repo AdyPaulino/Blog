@@ -43,7 +43,10 @@ class ArticlesTable extends Table
         ]);
         
         //many to many relationship
-        $this->belongsToMany('Tags');
+         $this->belongsToMany('Tags', [
+            'joinTable' => 'articles_tags',
+            'saveStrategy' => 'replace'
+        ]);
 
     }
 

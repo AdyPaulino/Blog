@@ -13,7 +13,7 @@
     <tr>
         <th>Id</th>
         <th>Title</th>
-        <th>Body</th>
+        <th>Comment</th>
     </tr>
 
 <?php foreach ($article->comments as $comment): ?>

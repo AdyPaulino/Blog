@@ -18,10 +18,7 @@ class TagsController extends AppController
      */
     public function index()
     {
-        $user = $this->Auth->user();
-        if (parent::isAuthorized($user)) {
-            $tags = $this->Tags->find('all');      
-        }
+        $tags = $this->Tags->find('all');      
         $this->set(compact('tags'));
     }
 
@@ -108,11 +105,6 @@ class TagsController extends AppController
     
     public function isAuthorized($user)
     {
-
-         // All registered users can add tags
-        if ($this->request->action === 'add') {
-            return true;
-        }
         
         return parent::isAuthorized($user);
     }

@@ -57,6 +57,44 @@ class UsersController extends AppController
     {
         return $this->redirect($this->Auth->logout());
     }
+    
+    public function delete($id = null)
+    {
+        
+        $this->request->allowMethod(['post', 'delete']);
+        $user = $this->Users->get($id);
+        if ($this->Users->delete($user)) {
+            $this->Flash->success(__('The user has been deleted.'));
+        } else {
+            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+        }
+        return $this->redirect(['action' => 'index']);
+    }
+    
+    public function edit($id = null)
+    {
+        $user = $this->Users->get($id);
+        $userAuth = $this->Auth->user();
+        if (parent::isAuthorized($userAuth)) {
+            if ($this->request->is(['post', 'put'])) {
+                $this->Users->patchEntity($user, $this->request->data);
+
+                if ($this->Users->save($user)) {
+                    $this->Flash->success(__('Your user has been updated.'));
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Unable to update your user.'));
+            }
+        }
+
+        $this->set('user', $user);
+    }
+    
+    public function isAuthorized($user)
+    {
+
+        return parent::isAuthorized($user);
+    }
 
 }
 ?>

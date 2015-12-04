@@ -109,11 +109,38 @@ class ArticlesController extends AppController
             $this->Articles->patchEntity($article, $this->request->data);
             $article->user_id = $this->Auth->user('id');
             if ($this->Articles->save($article)) {
+                
+                 foreach ($this->request->data['tags'] as $value) { 
+                    $tag2 = $this->Articles->Tags->findById($value)->first();
+                    $this->Articles->Tags->link($article, [$tag2]);
+                }
+                
                 $this->Flash->success(__('Your article has been updated.'));
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('Unable to update your article.'));
         }
+        
+         //All Tags
+        $this->loadModel('Tags');
+        $tags = $this->Tags->find('all');
+        
+        $tagArray = array();
+        
+        foreach ($tags as $key => $value) { 
+            $tagArray[$value['id']] = $value['description'];
+        }
+        
+        $this->set('tags', $tagArray); 
+        
+        //Selected tags
+        
+        $selectedTags = array();
+        foreach ($article->tags as $value) { 
+            $selectedTags[] = $value['id'];
+        }
+        
+        $this->set('selectedTags', $selectedTags);
 
         $this->set('article', $article);
     }

@@ -26,13 +26,10 @@ class TagsTable extends Table
 
         $this->table('tags');
         $this->displayField('description');
-        //$this->primaryKey('tag_id', 'article_id');
         $this->primaryKey('id');
 
-        
         //many to many relationship
-        $this->belongsToMany('Articles');
-    
+        $this->belongsToMany('Articles');  
 
     }
 
@@ -46,7 +43,11 @@ class TagsTable extends Table
     {
         $validator
             ->notEmpty('description')
-            ->requirePresence('description');
+            ->requirePresence('description')
+            ->add('description', 'unique', [
+            'rule' => 'validateUnique',
+            'provider' => 'table'
+        ]);
 
         return $validator;
     }

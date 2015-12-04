@@ -37,3 +37,19 @@
     <?php endforeach; ?>
 
 </table>
+
+<h1>Articles by Tags</h1>
+<table>
+    <tr>
+        <th>Tag</th>
+    </tr>
+
+<?php foreach ($tags as $tag): ?>
+    <tr>
+        <td>
+            <?= $this->Html->link($tag->description, ['controller'=> 'tags', 'action' => 'display', $tag->id]) ?>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+
+</table>

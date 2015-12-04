@@ -18,8 +18,28 @@ class ArticlesController extends AppController
      */
     public function index()
     {
-        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments', 'Tags']);
+        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments', 'Tags']);        
         $this->set(compact('articles'));
+        
+        //Tags
+        $query = $this->Articles->find()->contain(['Tags']);
+        $reducer = function ($output, $value) {
+            //if there are tags
+            if (isSet($value[0]->id)){
+                //leave only one of each
+                if (!in_array($value[0], $output)) {
+                    $output[] = $value[0];
+                }
+            }
+            return $output;
+        };
+
+        //removing tags from Articles
+        $uniqueTags = $query->all()
+            ->extract('tags')
+            ->reduce($reducer, []);
+        
+        $this->set('tags', $uniqueTags); 
     }
 
     /**

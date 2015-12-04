@@ -108,4 +108,21 @@ class TagsController extends AppController
         
         return parent::isAuthorized($user);
     }
+    
+    public function display($id = null)
+    {
+        //Tag
+        $tag = $this->Tags->get($id);
+        $this->set('tag', $tag);
+        $this->set('_serialize', ['tag']);
+        
+        //Articles
+        $this->loadModel('Articles');
+        $query = $this->Articles->find()->contain(['Authors']);
+        $query->matching('Tags', function ($q) use ($id) {
+            return $q->where(['Tags.id' => $id]);
+        });
+        
+        $this->set('articles', $query->toArray()); 
+    }
 }

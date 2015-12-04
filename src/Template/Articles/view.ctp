@@ -4,14 +4,16 @@
 
 <h1><?= h($article->title) ?></h1>
 <p><?= h($article->body) ?></p>
-<p><?= $article->author->username ?></p>
+<p>Author: <?= $article->author->username ?></p>
 <p><small>Created: <?= $article->created->format(DATE_RFC850) ?></small></p>
+
+<h2>Comments</h2>
 
 <table>
     <tr>
         <th>Id</th>
         <th>Title</th>
-        <th>Body</th>
+        <th>Comment</th>
     </tr>
 
 <?php foreach ($article->comments as $comment): ?>
@@ -22,6 +24,23 @@
         </td>
         <td>
             <?= $comment->body ?>
+        </td>
+    </tr>
+<?php endforeach; ?>
+
+</table>
+
+<h2>Tags</h2>
+
+<table>
+    <tr>
+        <th>Description</th>
+    </tr>
+
+<?php foreach ($article->tags as $tag): ?>
+    <tr>
+        <td>
+            <?= $tag->description ?>
         </td>
     </tr>
 <?php endforeach; ?>

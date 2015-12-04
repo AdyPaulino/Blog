@@ -18,8 +18,28 @@ class ArticlesController extends AppController
      */
     public function index()
     {
-        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments']);
+        $articles = $this->Articles->find('all')->contain(['Authors', 'Comments', 'Tags']);        
         $this->set(compact('articles'));
+        
+        //Tags
+        $query = $this->Articles->find()->contain(['Tags']);
+        $reducer = function ($output, $value) {
+            //if there are tags
+            if (isSet($value[0]->id)){
+                //leave only one of each
+                if (!in_array($value[0], $output)) {
+                    $output[] = $value[0];
+                }
+            }
+            return $output;
+        };
+
+        //removing tags from Articles
+        $uniqueTags = $query->all()
+            ->extract('tags')
+            ->reduce($reducer, []);
+        
+        $this->set('tags', $uniqueTags); 
     }
 
     /**
@@ -31,9 +51,24 @@ class ArticlesController extends AppController
      */
     public function view($id = null)
     {
-        $article = $this->Articles->get($id, [
-            'contain' => ['Authors', 'Comments']
-        ]);
+        
+        //only admin can see all the comments
+        $user = $this->Auth->user();
+        if (parent::isAuthorized($user)) {
+        
+            $article = $this->Articles->get($id, [
+                'contain' => ['Authors', 'Comments', 'Tags']
+            ]);
+        } else {
+            $article = $this->Articles->get($id, [
+            'contain' => ['Authors', 'Tags', 'Comments' => function ($q) {
+               return $q
+                    ->select(['body', 'article_id', 'title', 'id'])
+                    ->where(['Comments.approved' => true]);
+                }]
+            ]);
+        }
+        
         $this->set('article', $article);
         $this->set('_serialize', ['article']);
     }
@@ -50,12 +85,31 @@ class ArticlesController extends AppController
             $article = $this->Articles->patchEntity($article, $this->request->data);
             // Added this line
             $article->user_id = $this->Auth->user('id');
+            
             if ($this->Articles->save($article)) {
+                
+                foreach ($this->request->data['tags'] as $value) { 
+                    $tag2 = $this->Articles->Tags->findById($value)->first();
+                    $this->Articles->Tags->link($article, [$tag2]);
+                }
                 $this->Flash->success(__('Your article has been saved.'));
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('Unable to add your article.'));
+            $this->Flash->error(__('Unable to add your article.')); 
         }
+        
+        //Tags
+        $this->loadModel('Tags');
+        $tags = $this->Tags->find('all');
+        
+        $tagArray = array();
+        
+        foreach ($tags as $key => $value) { 
+            $tagArray[$value['id']] = $value['description'];
+        }
+        
+        $this->set('tags', $tagArray); 
+        
         $this->set('article', $article);
     }
 
@@ -68,16 +122,45 @@ class ArticlesController extends AppController
      */
     public function edit($id = null)
     {
-        $article = $this->Articles->get($id);
+        $article = $this->Articles->get($id, [
+                'contain' => ['Authors', 'Comments', 'Tags']
+        ]);
         if ($this->request->is(['post', 'put'])) {
             $this->Articles->patchEntity($article, $this->request->data);
             $article->user_id = $this->Auth->user('id');
             if ($this->Articles->save($article)) {
+                
+                 foreach ($this->request->data['tags'] as $value) { 
+                    $tag2 = $this->Articles->Tags->findById($value)->first();
+                    $this->Articles->Tags->link($article, [$tag2]);
+                }
+                
                 $this->Flash->success(__('Your article has been updated.'));
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('Unable to update your article.'));
         }
+        
+         //All Tags
+        $this->loadModel('Tags');
+        $tags = $this->Tags->find('all');
+        
+        $tagArray = array();
+        
+        foreach ($tags as $key => $value) { 
+            $tagArray[$value['id']] = $value['description'];
+        }
+        
+        $this->set('tags', $tagArray); 
+        
+        //Selected tags
+        
+        $selectedTags = array();
+        foreach ($article->tags as $value) { 
+            $selectedTags[] = $value['id'];
+        }
+        
+        $this->set('selectedTags', $selectedTags);
 
         $this->set('article', $article);
     }
